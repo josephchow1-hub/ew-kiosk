@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Everything Wine — In-Store Kiosk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1B3A52;--navy-deep:#142D40;--steel:#4A6B82;
+  --cream:#F5EFE0;--cream-light:#FBF6E8;--cream-pat:#EFE6D0;
+  --red:#D9352B;--red-dark:#B82A21;
+  --white:#ffffff;--mid:#4A6B82;--muted:#8A9AAB;
+  --border:#D8CFB8;--border-light:#E8DFC8;
+  --green:#2E7D32;--amber:#E65100;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Lato',sans-serif;color:var(--navy);}
+body{
+  background:var(--cream);
+  background-image:
+    radial-gradient(circle at 8% 15%,var(--cream-pat) 0%,transparent 7%),
+    radial-gradient(circle at 85% 55%,var(--cream-pat) 0%,transparent 7%),
+    radial-gradient(circle at 25% 85%,var(--cream-pat) 0%,transparent 7%),
+    radial-gradient(circle at 65% 8%,var(--cream-pat) 0%,transparent 7%),
+    radial-gradient(circle at 45% 45%,var(--cream-pat) 0%,transparent 5%);
+}
+
+/* ── PROMO ── */
+.promo{background:var(--steel);padding:10px 16px;text-align:center;font-size:13px;color:#fff;font-weight:400;}
+
+/* ── HEADER ── */
+.header{background:var(--cream);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-light);position:sticky;top:0;z-index:10;}
+.logo{display:flex;flex-direction:column;line-height:0.95;}
+.logo-e{font-size:22px;font-weight:900;letter-spacing:0.02em;color:var(--navy);text-transform:uppercase;}
+.logo-w{font-size:13px;font-weight:700;letter-spacing:0.42em;color:var(--navy);text-transform:uppercase;margin-top:1px;}
+.kiosk-tag{font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--navy);border:1.5px solid var(--navy);padding:5px 12px;border-radius:2px;background:var(--white);}
+
+/* ── BODY ── */
+.body{padding:24px 16px 40px;max-width:600px;margin:0 auto;}
+.sec-title{font-size:26px;font-weight:900;color:var(--navy);text-align:center;margin-bottom:6px;}
+.sec-sub{font-size:13px;color:var(--mid);text-align:center;margin-bottom:22px;}
+
+/* ── SEARCH CARD ── */
+.search-card{background:var(--white);border-radius:4px;padding:20px 18px;margin-bottom:22px;box-shadow:0 1px 4px rgba(27,58,82,0.08);}
+.input-row{display:flex;gap:8px;margin-bottom:16px;}
+.sku-inp{
+  flex:1;border:1.5px solid var(--border);outline:none;
+  padding:15px 16px;font-size:20px;font-family:'Lato',sans-serif;
+  font-weight:400;color:var(--navy);background:var(--white);
+  letter-spacing:0.05em;border-radius:3px;min-width:0;
+  transition:border-color .15s;-webkit-appearance:none;
+}
+.sku-inp:focus{border-color:var(--navy);}
+.sku-inp::placeholder{font-size:14px;color:var(--muted);letter-spacing:0;}
+.srch-btn{
+  background:var(--navy);color:#fff;border:none;
+  padding:0 24px;font-size:13px;font-family:'Lato',sans-serif;
+  font-weight:700;letter-spacing:0.06em;cursor:pointer;border-radius:3px;
+  display:flex;align-items:center;gap:8px;transition:background .15s;
+  white-space:nowrap;flex-shrink:0;min-height:52px;
+}
+.srch-btn:hover{background:var(--navy-deep);}
+.srch-btn:active{transform:scale(0.98);}
+.srch-btn svg{width:17px;height:17px;flex-shrink:0;}
+
+.div-row{display:flex;align-items:center;gap:10px;margin:0 0 12px;}
+.div-line{flex:1;height:1px;background:var(--border-light);}
+.div-txt{font-size:10px;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;white-space:nowrap;font-weight:700;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{
+  font-size:12px;color:var(--navy);background:var(--cream-light);
+  border:1px solid var(--border);border-radius:3px;
+  padding:7px 12px;cursor:pointer;white-space:nowrap;transition:all .15s;
+}
+.chip:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+/* ── LOADING ── */
+.loading{display:none;background:var(--white);border-radius:4px;padding:36px 20px;text-align:center;margin-bottom:22px;box-shadow:0 1px 4px rgba(27,58,82,0.08);}
+.loading.on{display:block;}
+.spin{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-size:12px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;font-weight:700;}
+
+/* ── ERROR ── */
+.error{display:none;background:var(--white);border:1px solid var(--border);border-radius:4px;padding:36px 20px;text-align:center;margin-bottom:22px;animation:fadeUp .25s ease;}
+.error.on{display:block;}
+.err-ico{width:52px;height:52px;border-radius:50%;background:var(--cream);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.err-title{font-size:20px;font-weight:900;color:var(--navy);margin-bottom:8px;}
+.err-sub{font-size:14px;color:var(--mid);line-height:1.6;}
+
+/* ── RESULT ── */
+.result{display:none;background:var(--white);border-radius:4px;overflow:hidden;margin-bottom:22px;animation:fadeUp .3s ease;box-shadow:0 1px 4px rgba(27,58,82,0.08);}
+.result.on{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.prod-head{padding:22px 20px 18px;display:flex;gap:16px;align-items:flex-start;border-bottom:1px solid var(--border-light);}
+.prod-ico{width:62px;height:62px;border-radius:4px;border:1.5px solid var(--border);background:var(--cream-light);display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;}
+.prod-name{font-size:17px;font-weight:700;color:var(--navy);line-height:1.3;margin-bottom:5px;}
+.prod-origin{font-size:12px;color:var(--mid);margin-bottom:10px;letter-spacing:0.02em;}
+.tags{display:flex;flex-wrap:wrap;gap:5px;}
+.tag{font-size:10px;padding:4px 10px;border-radius:3px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;}
+.tag-type{background:var(--navy);color:#fff;}
+.tag-sale{background:var(--red);color:#fff;}
+
+.price-row{padding:18px 20px;background:var(--cream-light);border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.price-now{font-size:34px;font-weight:900;color:var(--navy);letter-spacing:-0.01em;}
+.price-was{font-size:15px;color:var(--muted);text-decoration:line-through;}
+.price-save{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#fff;background:var(--red);padding:5px 10px;border-radius:3px;}
+
+.info-section{padding:18px 20px;border-bottom:1px solid var(--border-light);}
+.info-head{display:flex;align-items:center;gap:9px;margin-bottom:11px;}
+.info-ico{width:28px;height:28px;background:var(--cream);border:1px solid var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.info-ico svg{width:15px;height:15px;}
+.info-label{font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--navy);}
+.info-body{font-size:14px;line-height:1.65;color:var(--mid);}
+.info-italic{font-size:14px;font-style:italic;color:var(--navy);line-height:1.6;}
+.pair-list{display:flex;flex-wrap:wrap;gap:7px;}
+.pair-pill{font-size:12px;background:var(--cream-light);border:1px solid var(--border);color:var(--navy);padding:6px 12px;border-radius:3px;font-weight:400;}
+
+.details{padding:18px 20px;display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;border-bottom:1px solid var(--border-light);}
+.d-label{font-size:10px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;font-weight:700;margin-bottom:4px;}
+.d-val{font-size:14px;color:var(--navy);}
+
+.avail{padding:16px 20px;display:flex;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--border-light);}
+.av-pill{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--mid);background:var(--cream-light);border:1px solid var(--border);border-radius:3px;padding:7px 14px;}
+.av-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.av-green{background:var(--green);}
+.av-amber{background:var(--amber);}
+
+.actions{padding:18px 20px 22px;}
+.btn-clear{display:block;width:100%;text-align:center;padding:15px 20px;border-radius:3px;font-size:13px;font-family:'Lato',sans-serif;font-weight:700;letter-spacing:0.06em;cursor:pointer;background:transparent;color:var(--navy);border:1.5px solid var(--navy);transition:all .15s;}
+.btn-clear:hover{background:var(--cream);}
+
+/* ── RECENT ── */
+.recent{display:none;margin-bottom:20px;}
+.recent.on{display:block;}
+.rec-label{font-size:10px;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;font-weight:700;margin-bottom:12px;}
+.rec-item{background:var(--white);border:1px solid var(--border-light);border-radius:3px;padding:13px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;margin-bottom:7px;transition:border-color .15s;}
+.rec-item:hover{border-color:var(--navy);}
+.rec-icon{width:36px;height:36px;background:var(--cream-light);border:1px solid var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.rec-name{font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rec-meta{font-size:11px;color:var(--mid);margin-top:2px;}
+.rec-sku{font-size:11px;color:var(--mid);background:var(--cream-light);border:1px solid var(--border);border-radius:3px;padding:3px 9px;flex-shrink:0;font-weight:700;letter-spacing:0.04em;}
+
+/* ── FOOTER ── */
+.footer{background:var(--navy);padding:20px 16px;text-align:center;}
+.footer-txt{font-size:11px;color:rgba(255,255,255,0.65);letter-spacing:0.04em;line-height:1.8;}
+.footer-txt strong{color:#fff;}
+
+@media(max-width:400px){
+  .prod-ico{width:50px;height:50px;font-size:24px;}
+  .prod-name{font-size:15px;}
+  .price-now{font-size:28px;}
+  .srch-btn span{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="promo">5% Case Discount, Free Delivery Over $200*</div>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-e">EVERYTHING</div>
+    <div class="logo-w">WINE</div>
+  </div>
+  <div class="kiosk-tag">In-Store Kiosk</div>
+</div>
+
+<div class="body">
+  <div class="sec-title">Find a product</div>
+  <div class="sec-sub">Type or scan the SKU number from the shelf tag</div>
+
+  <div class="search-card">
+    <div class="input-row">
+      <input class="sku-inp" id="skuInput" type="text" inputmode="numeric" placeholder="Enter SKU number" maxlength="12" onkeydown="if(event.key==='Enter')doLookup()">
+      <button class="srch-btn" onclick="doLookup()">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="white" stroke-width="1.8"/><path d="M11 11l3 3" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span>Search</span>
+      </button>
+    </div>
+    <div class="div-row"><div class="div-line"></div><div class="div-txt">Try a sample SKU</div><div class="div-line"></div></div>
+    <div class="chips" id="sampleChips"></div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spin"></div>
+    <div class="load-txt">Looking up product…</div>
+  </div>
+
+  <div class="error" id="errorCard">
+    <div class="err-ico">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#1B3A52" stroke-width="1.6"/><path d="M12 8v5M12 16v.5" stroke="#1B3A52" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+    <div class="err-title" id="errTitle">SKU not found</div>
+    <div class="err-sub" id="errSub">Please check the shelf tag and try again, or ask a team member for help.</div>
+  </div>
+
+  <div class="result" id="resultCard">
+    <div class="prod-head">
+      <div class="prod-ico" id="prodIcon"></div>
+      <div style="flex:1;min-width:0">
+        <div class="prod-name" id="prodName"></div>
+        <div class="prod-origin" id="prodOrigin"></div>
+        <div class="tags" id="prodTags"></div>
+      </div>
+    </div>
+    <div class="price-row">
+      <span class="price-now" id="priceNow"></span>
+      <span class="price-was" id="priceWas" style="display:none"></span>
+      <span class="price-save" id="priceSave" style="display:none"></span>
+    </div>
+    <div class="info-section">
+      <div class="info-head">
+        <div class="info-ico"><svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#1B3A52" stroke-width="1.2"/><path d="M7.5 5v3.5l2 1.5" stroke="#1B3A52" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+        <div class="info-label">About this product</div>
+      </div>
+      <div class="info-italic" id="prodDesc"></div>
+    </div>
+    <div class="info-section">
+      <div class="info-head">
+        <div class="info-ico"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 2.5C5.5 2.5 4 4 4 6c0 1.6.9 2.9 2.2 3.5V13h2.6V9.5C10.1 8.9 11 7.6 11 6c0-2-1.5-3.5-3.5-3.5z" stroke="#1B3A52" stroke-width="1.2" fill="none"/></svg></div>
+        <div class="info-label">Tasting notes</div>
+      </div>
+      <div class="info-body" id="tastingNotes"></div>
+    </div>
+    <div class="info-section">
+      <div class="info-head">
+        <div class="info-ico"><svg viewBox="0 0 15 15" fill="none"><path d="M3.5 6h8l-1 7h-6z" stroke="#1B3A52" stroke-width="1.2" fill="none"/><path d="M5.5 6V4M9.5 6V4M7.5 6V3" stroke="#1B3A52" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+        <div class="info-label">Food pairing</div>
+      </div>
+      <div class="pair-list" id="foodPairs"></div>
+    </div>
+    <div class="details" id="detailGrid"></div>
+    <div class="avail" id="availRow"></div>
+    <div class="actions">
+      <button class="btn-clear" onclick="clearResult()">Clear search</button>
+    </div>
+  </div>
+
+  <div class="recent" id="recentSection">
+    <div class="rec-label">Recently viewed</div>
+    <div id="recentList"></div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-txt">
+    <strong>1-844-989-9463</strong> &nbsp;·&nbsp; everythingwine.ca<br>
+    Vancouver &nbsp;·&nbsp; North Vancouver &nbsp;·&nbsp; South Surrey &nbsp;·&nbsp; Langley &nbsp;·&nbsp; Abbotsford &nbsp;·&nbsp; Victoria
+  </div>
+</div>
+
+<script>
+const P = {
+  '453084':{name:'Moët & Chandon Imperial Brut Non Vintage',country:'France',region:'Champagne',varietal:'Chardonnay / Pinot Noir / Pinot Meunier',size:'750 mL',type:'Sparkling',price:'$79.99',sale:false,avail:['Warehouse delivery','Check other stores'],icon:'🍾',desc:'The world\'s most iconic Champagne house delivers its flagship non-vintage cuvée — vibrant, generous, and endlessly celebratory.',notes:'Bright green apple and pear on the nose with hints of fresh brioche and white flowers. Fine persistent mousse, lively acidity, and a long, mineral-driven finish.',pairs:['Oysters','Sushi','Brie','Fried chicken','Smoked salmon']},
+  '563338':{name:'Veuve Clicquot Ponsardin Brut',country:'France',region:'Champagne',varietal:'Pinot Noir / Chardonnay / Pinot Meunier',size:'750 mL',type:'Sparkling',price:'$85.99',sale:false,avail:['Warehouse delivery','Pick up in store'],icon:'🍾',desc:'The bold and elegant Yellow Label — a bold, full-flavoured Champagne that has defined the Veuve Clicquot style for over two centuries.',notes:'Aromas of toasted brioche, dried apricot, and yellow stone fruit. Full-bodied with a rich, creamy mousse, notes of vanilla and dried fruit, and a long, refreshing finish.',pairs:['Lobster','Smoked salmon','Aged hard cheeses','Roast chicken','Truffle dishes']},
+  '280461':{name:'Dom Pérignon Brut Vintage',country:'France',region:'Champagne',varietal:'Chardonnay / Pinot Noir',size:'750 mL',type:'Sparkling',price:'$329.99',sale:false,avail:['Warehouse delivery','Check other stores'],icon:'🍾',desc:'Produced only in exceptional vintages, Dom Pérignon is the pinnacle of Champagne — a wine of extraordinary complexity and prestige.',notes:'Layered aromas of toasted almond, white flowers, and ripe stone fruit. Silky texture with precise mineral tension, deep complexity, and an exceptionally long, vibrant finish.',pairs:['Caviar','Lobster thermidor','Foie gras','Sashimi','Aged Comté']},
+  '95933':{name:'Benvolio Prosecco DOC',country:'Italy',region:'Veneto',varietal:'Glera',size:'750 mL',type:'Sparkling',price:'$19.99',wasPrice:'$23.99',save:'Save $4',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🍾',desc:'A bright, fresh Prosecco from Italy\'s Veneto region — light-bodied, lively, and perfect for festive occasions.',notes:'Fresh aromas of green apple, pear, and white peach with floral hints. Crisp and lightly sweet on the palate with delicate bubbles and a clean, refreshing finish.',pairs:['Prosciutto & melon','Antipasti','Fruit desserts','Light seafood','Aperol Spritz']},
+  '677498':{name:'Orchard + Field Cranberry Frizzante',country:'Canada',region:'British Columbia',varietal:'Cranberry Frizzante',size:'750 mL',type:'Sparkling',price:'$19.99',sale:false,avail:['Warehouse delivery','Pick up in store'],icon:'🍾',desc:'A uniquely Canadian frizzante crafted from BC cranberries — lightly sparkling, tart-sweet, and refreshingly different.',notes:'Vibrant cranberry and raspberry aromas with a touch of citrus zest. Lightly effervescent with a tart, off-dry palate and a clean, fruit-forward finish.',pairs:['Turkey & stuffing','Soft cheeses','Charcuterie','Smoked salmon','Festive desserts']},
+  '373363':{name:'Tocornal Cabernet Sauvignon',country:'Chile',region:'Central Valley',varietal:'Cabernet Sauvignon',size:'750 mL',type:'Red Wine',price:'$9.99',wasPrice:'$12.99',save:'Save $3',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🍷',desc:'A friendly, easy-drinking Chilean Cabernet that delivers exceptional value with approachable fruit and smooth tannins.',notes:'Aromas of black cherry, plum, and a hint of vanilla oak. Medium-bodied with soft tannins, juicy red fruit on the palate, and a smooth, mellow finish.',pairs:['Burgers','Spaghetti bolognese','Grilled steak','Pizza','Aged cheddar']},
+  '373360':{name:'Tocornal Chardonnay',country:'Chile',region:'Central Valley',varietal:'Chardonnay',size:'750 mL',type:'White Wine',price:'$9.99',wasPrice:'$12.99',save:'Save $3',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🥂',desc:'A bright, unoaked Chilean Chardonnay crafted for everyday enjoyment — fresh, clean, and incredibly food-friendly.',notes:'Fresh citrus blossom and pear aromas with delicate tropical notes. Light to medium-bodied with crisp acidity and a clean, refreshing finish.',pairs:['Roast chicken','Caesar salad','Shrimp pasta','Fish tacos','Brie']},
+  '100594':{name:'Kim Crawford Marlborough Sauvignon Blanc',country:'New Zealand',region:'Marlborough',varietal:'Sauvignon Blanc',size:'750 mL',type:'White Wine',price:'$17.99',wasPrice:'$21.99',save:'Save $4',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🥂',desc:'New Zealand\'s most beloved Sauvignon Blanc — intensely aromatic, vibrant, and unmistakably Marlborough.',notes:'Explosive aromas of passionfruit, grapefruit, and freshly cut grass. Zesty and crisp on the palate with a long, mineral-driven finish.',pairs:['Goat cheese','Green salads','Thai seafood curry','Oysters','Asparagus']},
+  '150144':{name:'Kim Crawford Marlborough Pinot Grigio',country:'New Zealand',region:'Marlborough',varietal:'Pinot Grigio',size:'750 mL',type:'White Wine',price:'$17.99',wasPrice:'$21.99',save:'Save $4',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🥂',desc:'A crisp, lively Pinot Grigio from cool-climate Marlborough with the trademark Kim Crawford freshness.',notes:'Lifted notes of fresh pear, lemon zest, and white blossom. Clean and lively on the palate with a dry, refreshing finish.',pairs:['Sushi','Light pasta','Grilled white fish','Antipasti','Soft cheeses']},
+  '326728':{name:'Oyster Bay Marlborough Chardonnay',country:'New Zealand',region:'Marlborough',varietal:'Chardonnay',size:'750 mL',type:'White Wine',price:'$17.99',wasPrice:'$21.99',save:'Save $4',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🥂',desc:'A graceful, lightly oaked Chardonnay from cool-climate Marlborough — elegant, fresh, and beautifully balanced.',notes:'Delicate citrus, white peach, and a hint of toasted oak. Bright acidity balanced by a creamy texture leading to a long, elegant finish.',pairs:['Roast chicken','Creamy pasta','Grilled scallops','Brie','Lobster']},
+  '341657':{name:'Quails Gate Field & Flight Farmed in Cascadia Pinot Gris',country:'Canada',region:'Okanagan Valley, BC',varietal:'Pinot Gris',size:'750 mL',type:'White Wine',price:'$17.99',wasPrice:'$19.99',save:'Save $2',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🥂',desc:'A polished Okanagan Pinot Gris from one of BC\'s most respected estates — fresh, expressive, and locally crafted.',notes:'Aromas of pear, green apple, and orange blossom. Crisp and dry on the palate with subtle stone fruit and a clean, mineral finish.',pairs:['Pacific oysters','Goat cheese','Grilled trout','Sushi rolls','Summer salads']},
+  '682509':{name:'Laughing Stock Vineyards PNW Pinot Gris',country:'Canada',region:'Okanagan Valley, BC',varietal:'Pinot Gris',size:'750 mL',type:'White Wine',price:'$24.99',wasPrice:'$28.99',save:'Save $4',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🥂',desc:'A refined and aromatic PNW Pinot Gris from the acclaimed Laughing Stock Vineyards in BC\'s Okanagan.',notes:'Fragrant aromas of ripe pear, melon, and honeysuckle. Medium-bodied with a round, creamy texture, vibrant acidity, and a lingering stone-fruit finish.',pairs:['BC spot prawns','Halibut','Mushroom risotto','Soft cheeses','Pork tenderloin']},
+  '916916':{name:'Villa Maria Reserve Clifford Bay Sauvignon Blanc',country:'New Zealand',region:'Marlborough',varietal:'Sauvignon Blanc',size:'750 mL',type:'White Wine',price:'$29.99',wasPrice:'$34.99',save:'Save $5',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🥂',desc:'A premium single-vineyard Sauvignon Blanc from Marlborough\'s esteemed Clifford Bay — intense, complex, and exceptional.',notes:'Concentrated aromas of ripe gooseberry, passionfruit, and citrus with herbal undertones. Weighty and textured on the palate with a long, mineral finish.',pairs:['Seared scallops','Goat cheese tart','Oysters','Crab','Herb-roasted chicken']},
+  '432331':{name:'Capensis Silene Chardonnay 2021',country:'South Africa',region:'Western Cape',varietal:'Chardonnay',size:'750 mL',type:'White Wine',price:'$84.99',sale:false,avail:['Warehouse delivery','Pick up in store'],icon:'🥂',desc:'A world-class South African Chardonnay from Capensis — a collaboration between American and South African winemakers producing wines of extraordinary quality.',notes:'Complex aromas of white peach, citrus curd, and toasted hazelnut. Full-bodied with impeccable balance, creamy texture, vibrant acidity, and a long, refined finish.',pairs:['Lobster','Seared scallops','Roast chicken with cream sauce','Aged Gruyère','Sushi']},
+  '453092':{name:'Belle Grove Shiraz',country:'Spain',region:'—',varietal:'Shiraz',size:'750 mL',type:'Red Wine',price:'$6.99',wasPrice:'$10.99',save:'Save $4',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🍷',desc:'A bold, fruit-forward Shiraz at an unbeatable price — perfect for casual entertaining and weeknight pours.',notes:'Ripe blackberry and dark plum aromas with a touch of black pepper and spice. Medium-bodied with smooth tannins and a warm, fruit-forward finish.',pairs:['BBQ ribs','Lamb skewers','Aged hard cheese','Beef stew','Pepperoni pizza']},
+  '491934':{name:'Mirla Bay Merlot',country:'Chile',region:'Central Valley',varietal:'Merlot',size:'750 mL',type:'Red Wine',price:'$10.99',wasPrice:'$13.99',save:'Save $3',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🍷',desc:'A smooth, approachable Chilean Merlot built for everyday enjoyment and crowd-pleasing versatility.',notes:'Aromas of red cherry and mocha with subtle herbal notes. Smooth and round on the palate with gentle tannins and a fruit-forward finish.',pairs:['Roasted chicken','Mushroom risotto','Burgers','Mild cheeses','Pasta with red sauce']},
+  '341602':{name:'Cono Sur Bicicleta Pinot Noir',country:'Chile',region:'Casablanca Valley',varietal:'Pinot Noir',size:'750 mL',type:'Red Wine',price:'$10.99',wasPrice:'$12.99',save:'Save $2',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🍷',desc:'A delightful everyday Pinot Noir from cool-climate Casablanca Valley — light, fresh, and remarkably food-friendly.',notes:'Aromas of red cherry, raspberry, and subtle herbal notes. Light-bodied with silky tannins, bright acidity, and a fresh, fruit-driven finish.',pairs:['Roast chicken','Salmon','Mushroom dishes','Charcuterie','Duck breast']},
+  '315224':{name:'Markstone Pinot Noir',country:'USA',region:'California',varietal:'Pinot Noir',size:'750 mL',type:'Red Wine',price:'$16.99',wasPrice:'$19.99',save:'Save $3',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🍷',desc:'A polished California Pinot Noir offering bright fruit and silky elegance at a great everyday price.',notes:'Aromas of ripe cherry, raspberry, and hints of vanilla and toasted oak. Medium-bodied with smooth tannins and a soft, velvety finish.',pairs:['Salmon','Roast duck','Mushroom pasta','Brie','Charcuterie board']},
+  '298673':{name:'Rust Wine Co. Three Mountain Vineyard Pinot Noir',country:'Canada',region:'Okanagan Valley, BC',varietal:'Pinot Noir',size:'750 mL',type:'Red Wine',price:'$44.99',wasPrice:'$54.99',save:'Save $10',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🍷',desc:'A premium single-vineyard BC Pinot Noir from Rust Wine Co. — elegant, complex, and a true showcase of Okanagan terroir.',notes:'Aromas of wild strawberry, Bing cherry, and forest floor with subtle spice. Silky tannins, bright acidity, and a long, layered finish with earthy mineral notes.',pairs:['Duck confit','Salmon en croûte','Wild mushroom risotto','Pinot Noir-braised short rib','Aged Oka']},
+  '862060':{name:'Real de Aragon Garnacha',country:'Spain',region:'Aragon, Cariñena DO',varietal:'Garnacha (Grenache)',size:'750 mL',type:'Red Wine',price:'$16.99',wasPrice:'$19.99',save:'Save $3',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🍷',desc:'An old-vine Spanish Garnacha bursting with warm-climate generosity, juicy fruit, and Mediterranean character.',notes:'Aromas of ripe red cherry, raspberry jam, and Mediterranean herbs. Medium-full bodied with smooth tannins, warm spice, and a long, satisfying finish.',pairs:['Tapas','Paella','Roast lamb','Manchego cheese','BBQ ribs']},
+  '47007':{name:'Thistledown Thorny Devil Old Vine Grenache',country:'Australia',region:'McLaren Vale, South Australia',varietal:'Grenache',size:'750 mL',type:'Red Wine',price:'$49.99',sale:false,avail:['Warehouse delivery','Pick up in store'],icon:'🍷',desc:'A remarkable old-vine Grenache from McLaren Vale — rich, concentrated, and bursting with Australian warmth and character.',notes:'Intense aromas of wild strawberry, kirsch, and baking spices with hints of sandalwood. Lush and full-bodied with velvety tannins and a long, warming finish.',pairs:['Lamb shoulder','Roast pork belly','Beef tagine','Aged Gouda','Mushroom dishes']},
+  '341429':{name:'Black Cellar Shiraz Cabernet',country:'Canada',region:'—',varietal:'Shiraz / Cabernet Sauvignon',size:'750 mL',type:'Red Wine',price:'$8.99',wasPrice:'$10.99',save:'Save $2',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🍷',desc:'A smooth, accessible Canadian red blend offering generous dark fruit and soft tannins at an everyday price.',notes:'Dark berry and plum aromas with a hint of mocha. Smooth and easy-drinking with soft tannins and a short, fruit-forward finish.',pairs:['Pizza','Burgers','Pasta with meat sauce','Mild cheddar','Casual BBQ']},
+  '230007':{name:'Priest Creek Gold Rush Washington Merlot 2024',country:'Canada',region:'Washington / BC',varietal:'Merlot',size:'750 mL',type:'Red Wine',price:'$18.99',wasPrice:'$26.99',save:'Save $8',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🍷',desc:'A rich, fruit-forward Merlot sourced from Washington State by BC\'s Priest Creek Family Estate — smooth, layered, and excellent value.',notes:'Aromas of ripe plum, black cherry, and mocha with hints of dark chocolate. Full-bodied with velvety tannins and a long, smooth finish.',pairs:['Grilled ribeye','Lamb chops','Mushroom risotto','Aged cheeses','Roast duck']},
+  '67':{name:'Smirnoff Red Label Vodka',country:'Canada',region:'Bottled in Canada',varietal:'Vodka',size:'750 mL',type:'Spirits',price:'$23.99',wasPrice:'$24.99',save:'Save $1',sale:true,avail:['Warehouse delivery','Check other stores'],icon:'🥃',desc:'The world\'s best-selling vodka — triple-distilled for exceptional smoothness and incredible mixability.',notes:'Clean and neutral on the palate with a faintly sweet grain note. Smooth, crisp finish that makes it ideal for cocktails or sipping over ice.',pairs:['Caviar','Smoked salmon','Pickles & cured meats','Citrus mixers','Tonic & lime']},
+  '110056':{name:'Absolut Vodka',country:'Sweden',region:'Åhus',varietal:'Vodka',size:'750 mL',type:'Spirits',price:'$26.99',wasPrice:'$28.99',save:'Save $2',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🥃',desc:'Sweden\'s iconic continuously-distilled vodka crafted from winter wheat and deep-well water since 1879.',notes:'Smooth and full-bodied with a subtle grain sweetness, a hint of dried fruit, and a clean, balanced finish.',pairs:['Smoked salmon','Caviar blinis','Pickled herring','Dirty martinis','Tonic & lime']},
+  '243824':{name:'Oban 14yr Old Scotch Whisky',country:'Scotland',region:'West Highlands',varietal:'Single Malt Scotch',size:'750 mL',type:'Spirits',price:'$154.99',sale:false,avail:['Warehouse delivery','Pick up in store'],icon:'🥃',desc:'A coastal West Highland classic — the elegant middle ground between rich Highland warmth and Island smokiness.',notes:'Honeyed orange, sea salt, and light smoke on the nose. Rich and warming on the palate with dried fruit, malt, and a long, gently briny finish.',pairs:['Smoked salmon','Aged cheddar','Dark chocolate','Roast lamb','Oysters']},
+  '73999':{name:'Dalmore 12 Year Old Scotch Whisky',country:'Scotland',region:'Highlands',varietal:'Single Malt Scotch',size:'750 mL',type:'Spirits',price:'$111.99',wasPrice:'$121.99',save:'Save $10',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🥃',desc:'A signature Highland malt finished in Oloroso sherry casks — rich, layered, luxurious, and unmistakably Dalmore.',notes:'Aromas of orange marmalade, milk chocolate, and Christmas spice. Full-bodied with dried fruit, vanilla, caramel, and a smooth, lingering finish.',pairs:['Dark chocolate','Pecan tart','Aged Gouda','Roast duck','Crème brûlée']},
+  '5959':{name:"Bailey's Original Irish Cream Liqueur",country:'Ireland',region:'Dublin',varietal:'Cream Liqueur',size:'750 mL',type:'Spirits',price:'$30.99',wasPrice:'$31.99',save:'Save $1',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🥃',desc:'The original Irish cream liqueur — a perfectly balanced blend of Irish whiskey, fresh dairy cream, and rich cocoa.',notes:'Silky-smooth with rich notes of chocolate, vanilla, and coffee. Warming whiskey character on the finish with a creamy, indulgent texture.',pairs:['Coffee & espresso','Chocolate desserts','Vanilla ice cream','Cheesecake','Brownies']},
+  '144071':{name:'Aperol Aperitivo',country:'Italy',region:'Padua',varietal:'Aperitivo Liqueur',size:'750 mL',type:'Spirits',price:'$27.99',wasPrice:'$30.99',save:'Save $3',sale:true,avail:['Warehouse delivery','Pick up in store'],icon:'🥃',desc:'The vibrant orange liqueur that defines the Italian aperitivo hour — bittersweet, citrusy, and effortlessly social.',notes:'Aromas of orange peel, rhubarb, and gentian root. Bittersweet and lively on the palate with a refreshing herbal finish.',pairs:['Aperol Spritz with Prosecco','Olives & charcuterie','Bruschetta','Salty snacks','Aperitivo boards']},
+  '335693':{name:'Empress 1908 Premium Gin Collection',country:'Canada',region:'Victoria, BC',varietal:'Gin',size:'3 × 375 mL',type:'Spirits',price:'$81.99',sale:false,avail:['Warehouse delivery','Pick up in store'],icon:'🥃',desc:'A stunning trio of Victoria-distilled gins including the famous colour-changing Empress 1908 infused with butterfly pea blossom.',notes:'The signature Empress 1908 is floral and citrus-forward with notes of juniper, rose, and grapefruit. Turns vivid pink when mixed with citrus.',pairs:['Tonic & citrus','Cucumber & mint G&T','Smoked salmon canapés','Cheese boards','Floral cocktails']},
+  '230464':{name:'Sons of Vancouver Wheated Rye Whiskey',country:'Canada',region:'North Vancouver, BC',varietal:'Rye Whisky',size:'750 mL',type:'Spirits',price:'$95.98',sale:false,avail:['Warehouse delivery','Pick up in store'],icon:'🥃',desc:'A small-batch wheated rye from North Vancouver\'s award-winning Sons of Vancouver Distillery — bold, local, and beautifully balanced.',notes:'Notes of toffee, baking spice, and roasted nuts. Smooth and rich on the palate with vanilla, soft pepper, and a warming, lingering oak finish.',pairs:['Aged cheddar','Smoked meats','Apple pie','Dark chocolate','Old Fashioned cocktails']},
+  '630210':{name:'Jikon Junmai Ginjo Senbon Nishiki',country:'Japan',region:'Mie Prefecture',varietal:'Junmai Ginjo Sake',size:'720 mL',type:'Sake',price:'$87.98',sale:false,avail:['Warehouse delivery','Pick up in store'],icon:'🍶',desc:'An exquisite small-batch junmai ginjo from the celebrated Kiyasho Brewery — delicate, refined, and beautifully expressive.',notes:'Elegant aromas of ripe melon, white flowers, and steamed rice. Silky and gently sweet on the palate with refined umami and a clean, dry finish.',pairs:['Sashimi','Tempura','Nigiri sushi','Grilled white fish','Soft cheeses']},
+  '673257':{name:'Kagura Midnight Blue',country:'Japan',region:'Nara Prefecture',varietal:'Junmai Sake',size:'720 mL',type:'Sake',price:'$64.98',sale:false,avail:['Warehouse delivery','Pick up in store'],icon:'🍶',desc:'A bold, full-bodied junmai sake with dark, complex character and deep savoury depth from Nara Prefecture.',notes:'Rich aromas of caramel, roasted nuts, and dried mushroom. Full-bodied with deep umami, gentle acidity, and a long, warming, savoury finish.',pairs:['Yakitori','Beef tataki','Aged cheeses','Mushroom dishes','Soy-glazed pork']},
+  '296244':{name:'Guinness Pub Draught Stout 4 × 440 mL',country:'Ireland',region:'Dublin',varietal:'Dry Irish Stout',size:'4 × 440 mL',type:'Beer',price:'$13.79',wasPrice:'$14.79',save:'Save $1',sale:true,avail:['Warehouse delivery','Check other stores'],icon:'🍺',desc:'The iconic Irish dry stout — rich, creamy, and perfectly balanced with its signature cascading pour and nitrogen infusion.',notes:'Roasted barley aromas with hints of coffee and dark chocolate. Smooth and creamy on the palate with a dry, bittersweet finish and iconic velvety head.',pairs:['Fish & chips','Beef stew','Oysters','Cheddar burger','Shepherd\'s pie']},
+  '897082':{name:'Tenuta di Arceno Chianti Classico 2022',country:'Italy',region:'Chianti Classico, Tuscany',varietal:'Sangiovese',size:'750 mL',type:'Red Wine',price:'$42.99',sale:false,avail:['Warehouse delivery','Pick up in store'],icon:'🍷',desc:'A distinguished Chianti Classico from Tenuta di Arceno\'s historic Tuscan estate — elegant, structured, and authentically Italian.',notes:'Classic aromas of sour cherry, dried herbs, and earthy leather with hints of tobacco. Medium-bodied with firm tannins, bright acidity, and a long, savoury finish.',pairs:['Bistecca Fiorentina','Pasta al ragù','Porcini mushroom dishes','Pecorino cheese','Prosciutto di Parma']},
+};
+
+const SAMPLES = [
+  ['453084','Moët Brut'],['563338','Veuve Clicquot'],['373363','Tocornal Cab'],
+  ['100594','Kim Crawford SB'],['73999','Dalmore 12yr'],['341602','Cono Sur PN'],
+  ['862060','Real de Aragon'],['630210','Jikon Sake'],['897082','Chianti Classico'],
+];
+
+let recent = [];
+
+function init(){
+  const c = document.getElementById('sampleChips');
+  SAMPLES.forEach(([sku,label])=>{
+    const el = document.createElement('span');
+    el.className='chip';
+    el.textContent = sku+' — '+label;
+    el.onclick = ()=>tryDemo(sku);
+    c.appendChild(el);
+  });
+}
+
+function tryDemo(sku){ document.getElementById('skuInput').value=sku; doLookup(); }
+
+function doLookup(){
+  const raw = document.getElementById('skuInput').value.trim().replace(/\s/g,'');
+  if(!raw) return;
+  clearResult(false);
+  document.getElementById('loading').classList.add('on');
+  setTimeout(()=>{
+    document.getElementById('loading').classList.remove('on');
+    const p = findProduct(raw);
+    if(p) showResult(raw,p);
+    else showError(raw);
+  }, 300);
+}
+
+function findProduct(sku){
+  if(P[sku]) return P[sku];
+  const s = sku.replace(/^0+/,'');
+  for(const k in P){ if(k.replace(/^0+/,'')===s) return P[k]; }
+  return null;
+}
+
+function showResult(sku, p){
+  document.getElementById('prodIcon').textContent = p.icon||'🍷';
+  document.getElementById('prodName').textContent = p.name;
+  document.getElementById('prodOrigin').textContent =
+    p.country + (p.region&&p.region!=='—'?' · '+p.region:'') + ' · SKU: '+sku;
+
+  const tags = document.getElementById('prodTags');
+  tags.innerHTML='';
+  const t1=document.createElement('span'); t1.className='tag tag-type'; t1.textContent=p.type; tags.appendChild(t1);
+  if(p.sale){ const t2=document.createElement('span'); t2.className='tag tag-sale'; t2.textContent='On Sale'; tags.appendChild(t2); }
+
+  document.getElementById('priceNow').textContent = p.price;
+  const pw=document.getElementById('priceWas'), ps=document.getElementById('priceSave');
+  if(p.sale&&p.wasPrice){ pw.textContent=p.wasPrice; pw.style.display='inline'; ps.textContent=p.save; ps.style.display='inline-block'; }
+  else{ pw.style.display='none'; ps.style.display='none'; }
+
+  document.getElementById('prodDesc').textContent = '"'+p.desc+'"';
+  document.getElementById('tastingNotes').textContent = p.notes;
+
+  const fp=document.getElementById('foodPairs'); fp.innerHTML='';
+  (p.pairs||[]).forEach(pair=>{ const el=document.createElement('span'); el.className='pair-pill'; el.textContent=pair; fp.appendChild(el); });
+
+  const dg=document.getElementById('detailGrid'); dg.innerHTML='';
+  [['Varietal',p.varietal],['Size',p.size],['Country',p.country],['Region',p.region||'—']].forEach(([l,v])=>{
+    const d=document.createElement('div');
+    d.innerHTML=`<div class="d-label">${l}</div><div class="d-val">${v}</div>`;
+    dg.appendChild(d);
+  });
+
+  const ar=document.getElementById('availRow'); ar.innerHTML='';
+  (p.avail||[]).forEach(a=>{
+    const chip=document.createElement('div'); chip.className='av-pill';
+    const inStore=a.toLowerCase().includes('store')||a.toLowerCase().includes('pick');
+    chip.innerHTML=`<span class="av-dot ${inStore?'av-green':'av-amber'}"></span>${a}`;
+    ar.appendChild(chip);
+  });
+
+  document.getElementById('resultCard').classList.add('on');
+  document.getElementById('resultCard').scrollIntoView({behavior:'smooth',block:'start'});
+
+  if(!recent.find(r=>r.sku===sku)){
+    recent.unshift({sku, name:p.name, type:p.type, price:p.price, icon:p.icon||'🍷'});
+    if(recent.length>5) recent.pop();
+  }
+  renderRecent();
+}
+
+function showError(sku){
+  document.getElementById('errTitle').textContent='SKU "'+sku+'" not found';
+  document.getElementById('errSub').textContent='This SKU isn\'t in the kiosk index yet. Please ask a team member for assistance.';
+  document.getElementById('errorCard').classList.add('on');
+}
+
+function clearResult(clearInput=true){
+  document.getElementById('resultCard').classList.remove('on');
+  document.getElementById('errorCard').classList.remove('on');
+  document.getElementById('loading').classList.remove('on');
+  if(clearInput){ document.getElementById('skuInput').value=''; document.getElementById('skuInput').focus(); }
+}
+
+function renderRecent(){
+  const sec=document.getElementById('recentSection');
+  const list=document.getElementById('recentList');
+  if(!recent.length){ sec.classList.remove('on'); return; }
+  sec.classList.add('on');
+  list.innerHTML='';
+  recent.forEach(r=>{
+    const item=document.createElement('div'); item.className='rec-item';
+    item.onclick=()=>{ document.getElementById('skuInput').value=r.sku; doLookup(); };
+    item.innerHTML=`<div class="rec-icon">${r.icon}</div><div style="flex:1;min-width:0"><div class="rec-name">${r.name}</div><div class="rec-meta">${r.type} · ${r.price}</div></div><span class="rec-sku">${r.sku}</span>`;
+    list.appendChild(item);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
